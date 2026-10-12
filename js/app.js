@@ -158,7 +158,12 @@ function showQuestion() {
   const question = QUESTIONS[currentQuestionIndex];
   const saved = getSavedAnswer(question.id);
 
-  questionNumber.textContent = `QUESTION ${question.number} / ${QUESTIONS.length}`;
+  if (question.id === "q10") {
+  questionNumber.textContent = "FINAL QUESTION";
+} else {
+  questionNumber.textContent =
+    `QUESTION ${question.number} / ${QUESTIONS.length}`;
+}
   questionTitle.textContent = question.title;
   teamBadge.textContent = `チーム：${selectedTeam.name}`;
 
