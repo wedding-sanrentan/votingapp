@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f3c94d">
+  <title>幹事画面 | 新郎新婦サンレンタン</title>
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+  <main class="admin-shell">
+    <header class="admin-header">
+      <div>
+        <p class="eyebrow">ADMIN DASHBOARD</p>
+        <h1>新郎新婦サンレンタン</h1>
+      </div>
+      <button id="logout-button" class="button button-ghost button-small" hidden>ログアウト</button>
+    </header>
+
+    <section id="admin-login" class="card admin-login-card">
+      <h2>幹事ログイン</h2>
+      <label class="field-label" for="admin-email">メールアドレス</label>
+      <input id="admin-email" class="input" type="email" autocomplete="username">
+
+      <label class="field-label" for="admin-password">パスワード</label>
+      <input id="admin-password" class="input" type="password" autocomplete="current-password">
+
+      <button id="login-button" class="button button-primary">ログイン</button>
+      <div id="login-message" class="message" aria-live="polite"></div>
+    </section>
+
+    <section id="admin-dashboard" hidden>
+      <div class="admin-grid">
+        <section class="card">
+          <h2>問題コントロール</h2>
+
+          <label class="field-label" for="admin-question-select">表示する問題</label>
+          <select id="admin-question-select" class="select"></select>
+
+          <div id="admin-control-status" class="status status-closed">状態確認中…</div>
+
+          <div class="admin-actions">
+            <button id="open-button" class="button button-open">回答受付を開始</button>
+            <button id="close-button" class="button button-danger">回答を締め切る</button>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2>回答状況</h2>
+          <div class="big-stat">
+            <span id="answered-count">0</span>
+            <span class="big-stat-denom">/ <span id="team-count">0</span> チーム</span>
+          </div>
+          <p id="answer-key-status" class="subtle"></p>
+        </section>
+      </div>
+
+      <section class="card">
+        <div class="section-title-row">
+          <h2>各チームの回答・得点</h2>
+          <span class="subtle">回答が届くと自動更新されます</span>
+        </div>
+
+        <div class="table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>チーム</th>
+                <th>回答</th>
+                <th>1位</th>
+                <th>2位</th>
+                <th>3位</th>
+                <th>得点</th>
+                <th>最終更新</th>
+              </tr>
+            </thead>
+            <tbody id="answers-table-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-title-row">
+          <h2>総合ランキング</h2>
+          <button id="refresh-ranking-button" class="button button-secondary button-small">再集計</button>
+        </div>
+        <div id="leaderboard" class="leaderboard"></div>
+      </section>
+    </section>
+  </main>
+
+  <script type="module" src="./js/admin.js"></script>
+</body>
+</html>

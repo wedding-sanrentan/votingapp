@@ -1,0 +1,64 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      // ↓ Firebase Authentication で作成した幹事ユーザーの UID へ必ず変更してください
+      return signedIn()
+        && request.auth.uid == "REPLACE_WITH_ADMIN_UID";
+    }
+
+    function validAnswer(questionId, teamId) {
+      return request.resource.data.keys().hasOnly([
+          "teamId",
+          "questionId",
+          "ranking",
+          "writerUid",
+          "updatedAt"
+        ])
+        && request.resource.data.teamId == teamId
+        && request.resource.data.questionId == questionId
+        && request.resource.data.writerUid == request.auth.uid
+        && request.resource.data.ranking is list
+        && request.resource.data.ranking.size() == 3
+        && request.resource.data.ranking[0] is string
+        && request.resource.data.ranking[1] is string
+        && request.resource.data.ranking[2] is string
+        && request.resource.data.ranking[0] != request.resource.data.ranking[1]
+        && request.resource.data.ranking[0] != request.resource.data.ranking[2]
+        && request.resource.data.ranking[1] != request.resource.data.ranking[2];
+    }
+
+    // 問題ごとの「受付中 / 締切」
+    match /controls/{questionId} {
+      allow read: if signedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // 正解データ
+    match /answerKeys/{questionId} {
+      allow read, write: if isAdmin();
+    }
+
+    // 参加者回答
+    match /answers/{questionId}/teams/{teamId} {
+      allow read: if isAdmin();
+
+      // 同じ teamId のドキュメントへ setDoc するため、
+      // 同一チームが再回答した場合は最後の正常送信で上書きされます。
+      allow create, update: if signedIn()
+        && !isAdmin()
+        && validAnswer(questionId, teamId)
+        && get(
+          /databases/$(database)/documents/controls/$(questionId)
+        ).data.isOpen == true;
+
+      allow delete: if isAdmin();
+    }
+  }
+}
