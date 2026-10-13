@@ -185,29 +185,53 @@ function validateAnswer() {
 }
 
 function watchControl(questionId) {
+
   if (unsubscribeControl) {
+
     unsubscribeControl();
     unsubscribeControl = null;
+
   }
+
 
   isQuestionOpen = false;
   updateStatusUi();
 
-  const controlRef = doc(db, "controls", questionId);
 
-  unsubscribeControl = onSnapshot(
-    controlRef,
-    (snapshot) => {
-      isQuestionOpen = snapshot.exists() && snapshot.data()?.isOpen === true;
-      updateStatusUi();
-    },
-    (error) => {
-      console.error(error);
-      isQuestionOpen = false;
-      updateStatusUi();
-      showMessage("受付状態を取得できませんでした。", "error");
-    }
-  );
+  const controlRef =
+    doc(
+      db,
+      "controls",
+      questionId
+    );
+
+
+  unsubscribeControl =
+    onSnapshot(
+
+      controlRef,
+
+      snapshot => {
+
+        isQuestionOpen =
+          snapshot.exists() &&
+          snapshot.data()?.isOpen === true;
+
+        updateStatusUi();
+
+      },
+
+      error => {
+
+        console.error(error);
+
+        isQuestionOpen = false;
+
+        updateStatusUi();
+
+      }
+
+    );
 }
 
 function showQuestion() {
