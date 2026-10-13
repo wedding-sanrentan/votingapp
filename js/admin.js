@@ -14,7 +14,8 @@ import {
   getDocs,
   onSnapshot,
   serverTimestamp,
-  setDoc
+  setDoc,
+  writeBatch
 } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js";
 
 const loginSection = document.getElementById("admin-login");
