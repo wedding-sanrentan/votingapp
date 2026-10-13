@@ -32,48 +32,114 @@
       <button id="start-button" class="button button-primary">ゲームに参加する</button>
     </section>
 
-    <section id="question-screen" class="card" hidden>
-      <div class="question-top">
-        <div>
-          <p id="question-number" class="question-number"></p>
-          <h2 id="question-title" class="question-title"></h2>
-        </div>
-        <button id="change-team-button" class="button button-ghost button-small">チーム変更</button>
-      </div>
+<section
+  id="question-screen"
+  class="card"
+  hidden
+>
 
-      <div id="team-badge" class="team-badge"></div>
+  <div class="question-top">
+    <div>
+      <p id="question-number" class="question-number"></p>
+    </div>
+  </div>
 
-      <div id="choice-list" class="choice-list"></div>
+  <div id="team-badge" class="team-badge"></div>
 
-      <div class="ranking-box">
-        <h3>1位〜3位を予想</h3>
+  <!-- 締切中はこれだけ表示 -->
+  <div
+    id="closed-message"
+    class="status status-closed"
+  >
+    🔒 この問題は現在、回答を受け付けていません。<br>
+    司会の案内をお待ちください。
+  </div>
 
-        <label class="rank-row">
-          <span class="rank-medal">🥇 1位</span>
-          <select id="rank1" class="select rank-select"></select>
-        </label>
+  <!-- 回答受付中だけ表示 -->
+  <div id="question-content" hidden>
 
-        <label class="rank-row">
-          <span class="rank-medal">🥈 2位</span>
-          <select id="rank2" class="select rank-select"></select>
-        </label>
+    <h2
+      id="question-title"
+      class="question-title"
+    ></h2>
 
-        <label class="rank-row">
-          <span class="rank-medal">🥉 3位</span>
-          <select id="rank3" class="select rank-select"></select>
-        </label>
-      </div>
+    <div
+      id="choice-list"
+      class="choice-list"
+    ></div>
 
-      <div id="status" class="status status-closed">受付状況を確認しています…</div>
-      <div id="message" class="message" aria-live="polite"></div>
+    <div class="ranking-box">
 
-      <button id="submit-button" class="button button-primary" disabled>回答を送信</button>
+      <h3>1位〜3位を予想</h3>
 
-      <div class="navigation">
-        <button id="previous-button" class="button button-secondary">← 前へ</button>
-        <button id="next-button" class="button button-secondary">次へ →</button>
-      </div>
-    </section>
+      <label class="rank-row">
+        <span class="rank-medal">🥇 1位</span>
+        <select
+          id="rank1"
+          class="select rank-select"
+        ></select>
+      </label>
+
+      <label class="rank-row">
+        <span class="rank-medal">🥈 2位</span>
+        <select
+          id="rank2"
+          class="select rank-select"
+        ></select>
+      </label>
+
+      <label class="rank-row">
+        <span class="rank-medal">🥉 3位</span>
+        <select
+          id="rank3"
+          class="select rank-select"
+        ></select>
+      </label>
+
+    </div>
+
+    <div
+      id="status"
+      class="status status-open"
+    >
+      🟢 回答受付中
+    </div>
+
+    <div
+      id="message"
+      class="message"
+      aria-live="polite"
+    ></div>
+
+    <button
+      id="submit-button"
+      class="button button-primary"
+      disabled
+    >
+      回答を送信
+    </button>
+
+  </div>
+
+  <div class="navigation">
+
+    <button
+      id="previous-button"
+      class="button button-secondary"
+    >
+      ← 前へ
+    </button>
+
+    <button
+      id="next-button"
+      class="button button-secondary"
+    >
+      次へ →
+    </button>
+
+  </div>
+
+</section>
   </main>
 
   <script type="module" src="./js/app.js"></script>
