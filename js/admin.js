@@ -30,17 +30,15 @@ const questionSelect = document.getElementById("admin-question-select");
 const controlStatus = document.getElementById("admin-control-status");
 const openButton = document.getElementById("open-button");
 const closeButton = document.getElementById("close-button");
+const resetQuestionButton = document.getElementById("reset-question-button");
+const resetAllButton = document.getElementById("reset-all-button");
+
 const answeredCount = document.getElementById("answered-count");
 const teamCount = document.getElementById("team-count");
 const answerKeyStatus = document.getElementById("answer-key-status");
 const answersTableBody = document.getElementById("answers-table-body");
 const refreshRankingButton = document.getElementById("refresh-ranking-button");
 const leaderboard = document.getElementById("leaderboard");
-const resetQuestionButton =
-  document.getElementById("reset-question-button");
-
-const resetAllButton =
-  document.getElementById("reset-all-button");
 
 let unsubscribeControl = null;
 let unsubscribeAnswers = null;
@@ -57,10 +55,16 @@ function choiceText(question, choiceId) {
 }
 
 function calculateScore(answer, correct) {
-  if (!Array.isArray(answer) || !Array.isArray(correct) || answer.length !== 3 || correct.length !== 3) {
+  if (
+    !Array.isArray(answer) ||
+    !Array.isArray(correct) ||
+    answer.length !== 3 ||
+    correct.length !== 3
+  ) {
     return null;
   }
 
+  // 1〜3位が完全一致
   if (
     answer[0] === correct[0] &&
     answer[1] === correct[1] &&
@@ -71,18 +75,22 @@ function calculateScore(answer, correct) {
 
   const matchCount = answer.filter((value) => correct.includes(value)).length;
 
+  // 3つの選択肢が一致（順位違い）
   if (matchCount === 3) {
     return 4;
   }
 
+  // 1位・2位が順位まで一致
   if (answer[0] === correct[0] && answer[1] === correct[1]) {
     return 3;
   }
 
+  // 3つのうち2つが一致
   if (matchCount >= 2) {
     return 2;
   }
 
+  // 1位が一致
   if (answer[0] === correct[0]) {
     return 1;
   }
@@ -91,7 +99,10 @@ function calculateScore(answer, correct) {
 }
 
 function formatTimestamp(value) {
-  if (!value || typeof value.toDate !== "function") return "-";
+  if (!value || typeof value.toDate !== "function") {
+    return "-";
+  }
+
   return value.toDate().toLocaleTimeString("ja-JP", {
     hour: "2-digit",
     minute: "2-digit",
@@ -109,15 +120,20 @@ function renderAnswerTable() {
     const data = currentAnswers.get(team.id);
     const tr = document.createElement("tr");
 
-    if (data) count += 1;
+    if (data) {
+      count += 1;
+    }
 
-    const score = data && currentAnswerKey
-      ? calculateScore(data.ranking, currentAnswerKey)
-      : null;
+    const score =
+      data && currentAnswerKey
+        ? calculateScore(data.ranking, currentAnswerKey)
+        : null;
 
     tr.innerHTML = `
       <td><strong>${team.name}</strong></td>
-      <td class="${data ? "answer-yes" : "answer-no"}">${data ? "✅ 回答済み" : "— 未回答"}</td>
+      <td class="${data ? "answer-yes" : "answer-no"}">
+        ${data ? "✅ 回答済み" : "— 未回答"}
+      </td>
       <td>${data ? choiceText(question, data.ranking?.[0]) : "-"}</td>
       <td>${data ? choiceText(question, data.ranking?.[1]) : "-"}</td>
       <td>${data ? choiceText(question, data.ranking?.[2]) : "-"}</td>
@@ -155,8 +171,15 @@ async function loadAnswerKey(questionId) {
 function watchQuestion() {
   const question = currentQuestion();
 
-  if (unsubscribeControl) unsubscribeControl();
-  if (unsubscribeAnswers) unsubscribeAnswers();
+  if (unsubscribeControl) {
+    unsubscribeControl();
+    unsubscribeControl = null;
+  }
+
+  if (unsubscribeAnswers) {
+    unsubscribeAnswers();
+    unsubscribeAnswers = null;
+  }
 
   currentAnswers = new Map();
   currentAnswerKey = null;
@@ -229,15 +252,23 @@ async function refreshLeaderboard() {
         getDocs(collection(db, "answers", question.id, "teams"))
       ]);
 
-      if (!keySnapshot.exists()) continue;
+      if (!keySnapshot.exists()) {
+        continue;
+      }
 
       const correct = keySnapshot.data()?.ranking;
-      if (!Array.isArray(correct)) continue;
+
+      if (!Array.isArray(correct)) {
+        continue;
+      }
 
       answersSnapshot.forEach((answerDoc) => {
-        if (!totals.has(answerDoc.id)) return;
+        if (!totals.has(answerDoc.id)) {
+          return;
+        }
 
         const score = calculateScore(answerDoc.data()?.ranking, correct);
+
         if (score !== null) {
           totals.set(answerDoc.id, totals.get(answerDoc.id) + score);
         }
@@ -265,7 +296,124 @@ async function refreshLeaderboard() {
     });
   } catch (error) {
     console.error(error);
-    leaderboard.innerHTML = `<p class="subtle">総合ランキングを取得できませんでした。</p>`;
+    leaderboard.innerHTML =
+      `<p class="subtle">総合ランキングを取得できませんでした。</p>`;
+  }
+}
+
+async function resetCurrentQuestion() {
+  const question = currentQuestion();
+
+  const ok = confirm(
+    `第${question.number}問の回答をすべて削除します。\n` +
+    "この問題は回答締切状態に戻ります。\n" +
+    "正解データは削除されません。\n\n" +
+    "この操作は元に戻せません。\n" +
+    "リセットしますか？"
+  );
+
+  if (!ok) {
+    return;
+  }
+
+  resetQuestionButton.disabled = true;
+  resetAllButton.disabled = true;
+
+  try {
+    const batch = writeBatch(db);
+
+    const answersSnapshot = await getDocs(
+      collection(db, "answers", question.id, "teams")
+    );
+
+    answersSnapshot.forEach((answerDoc) => {
+      batch.delete(answerDoc.ref);
+    });
+
+    batch.set(
+      doc(db, "controls", question.id),
+      {
+        isOpen: false,
+        resetToken: Date.now(),
+        updatedAt: serverTimestamp()
+      },
+      { merge: true }
+    );
+
+    await batch.commit();
+
+    await refreshLeaderboard();
+
+    alert(`第${question.number}問をリセットしました。`);
+  } catch (error) {
+    console.error(error);
+    alert("リセットに失敗しました。");
+  } finally {
+    resetQuestionButton.disabled = false;
+    resetAllButton.disabled = false;
+  }
+}
+
+async function resetAllQuestions() {
+  const ok = confirm(
+    "第7問〜第10問の回答をすべて削除します。\n" +
+    "全問題を回答締切状態に戻します。\n" +
+    "正解データは削除されません。\n\n" +
+    "この操作は元に戻せません。\n" +
+    "本当にリセットしますか？"
+  );
+
+  if (!ok) {
+    return;
+  }
+
+  const secondCheck = confirm(
+    "最終確認です。\n\n" +
+    "全チームの第7問〜第10問の回答を削除してよろしいですか？"
+  );
+
+  if (!secondCheck) {
+    return;
+  }
+
+  resetQuestionButton.disabled = true;
+  resetAllButton.disabled = true;
+
+  try {
+    const batch = writeBatch(db);
+    const resetToken = Date.now();
+
+    for (const question of QUESTIONS) {
+      const answersSnapshot = await getDocs(
+        collection(db, "answers", question.id, "teams")
+      );
+
+      answersSnapshot.forEach((answerDoc) => {
+        batch.delete(answerDoc.ref);
+      });
+
+      batch.set(
+        doc(db, "controls", question.id),
+        {
+          isOpen: false,
+          resetToken,
+          updatedAt: serverTimestamp()
+        },
+        { merge: true }
+      );
+    }
+
+    await batch.commit();
+
+    await refreshLeaderboard();
+
+    alert("全問題をリセットしました。");
+  } catch (error) {
+    console.error(error);
+    alert("全問題のリセットに失敗しました。");
+  } finally {
+    resetQuestionButton.disabled = false;
+    resetAllButton.disabled = false;
   }
 }
 
@@ -283,11 +431,17 @@ loginButton.addEventListener("click", async () => {
   loginMessage.className = "message";
 
   try {
-    await signInWithEmailAndPassword(auth, emailInput.value.trim(), passwordInput.value);
+    await signInWithEmailAndPassword(
+      auth,
+      emailInput.value.trim(),
+      passwordInput.value
+    );
+
     loginMessage.textContent = "";
   } catch (error) {
     console.error(error);
-    loginMessage.textContent = "ログインできませんでした。メールアドレスとパスワードを確認してください。";
+    loginMessage.textContent =
+      "ログインできませんでした。メールアドレスとパスワードを確認してください。";
     loginMessage.className = "message error";
   }
 });
@@ -302,22 +456,16 @@ logoutButton.addEventListener("click", () => signOut(auth));
 questionSelect.addEventListener("change", watchQuestion);
 openButton.addEventListener("click", () => setOpenState(true));
 closeButton.addEventListener("click", () => setOpenState(false));
+resetQuestionButton.addEventListener("click", resetCurrentQuestion);
+resetAllButton.addEventListener("click", resetAllQuestions);
 refreshRankingButton.addEventListener("click", refreshLeaderboard);
-resetQuestionButton.addEventListener(
-  "click",
-  resetCurrentQuestion
-);
-
-resetAllButton.addEventListener(
-  "click",
-  resetAllQuestions
-);
 
 onAuthStateChanged(auth, (user) => {
   if (user && !user.isAnonymous) {
     loginSection.hidden = true;
     dashboard.hidden = false;
     logoutButton.hidden = false;
+
     watchQuestion();
     refreshLeaderboard();
   } else {
@@ -325,194 +473,14 @@ onAuthStateChanged(auth, (user) => {
     dashboard.hidden = true;
     logoutButton.hidden = true;
 
-    if (unsubscribeControl) unsubscribeControl();
-    if (unsubscribeAnswers) unsubscribeAnswers();
-  }
-});
-
-async function resetCurrentQuestion() {
-
-  const question = currentQuestion();
-
-  const ok = confirm(
-    `第${question.number}問の回答をすべて削除します。\n` +
-    `この操作は元に戻せません。\n\n` +
-    `リセットしますか？`
-  );
-
-  if (!ok) {
-    return;
-  }
-
-
-  resetQuestionButton.disabled = true;
-  resetAllButton.disabled = true;
-
-
-  try {
-
-    const batch = writeBatch(db);
-
-    // この問題の全チーム回答を取得
-    const answersSnapshot =
-      await getDocs(
-        collection(
-          db,
-          "answers",
-          question.id,
-          "teams"
-        )
-      );
-
-
-    // 回答を全部削除
-    answersSnapshot.forEach((answerDoc) => {
-      batch.delete(answerDoc.ref);
-    });
-
-
-    // 問題を締切状態へ戻す
-    // resetToken は参加者端末の回答表示クリア用
-    const controlRef =
-      doc(
-        db,
-        "controls",
-        question.id
-      );
-
-    batch.set(
-      controlRef,
-      {
-        isOpen: false,
-        resetToken: Date.now()
-      },
-      {
-        merge: true
-      }
-    );
-
-
-    await batch.commit();
-
-
-    alert(
-      `第${question.number}問をリセットしました。`
-    );
-
-  } catch (error) {
-
-    console.error(error);
-
-    alert(
-      "リセットに失敗しました。"
-    );
-
-  } finally {
-
-    resetQuestionButton.disabled = false;
-    resetAllButton.disabled = false;
-
-  }
-}
-
-async function resetAllQuestions() {
-
-  const ok = confirm(
-    "第7問〜第10問の回答をすべて削除します。\n" +
-    "全チームの得点も0に戻ります。\n\n" +
-    "この操作は元に戻せません。\n" +
-    "本当にリセットしますか？"
-  );
-
-  if (!ok) {
-    return;
-  }
-
-
-  const secondCheck = confirm(
-    "最終確認です。\n\n" +
-    "全問題をリセットしてよろしいですか？"
-  );
-
-  if (!secondCheck) {
-    return;
-  }
-
-
-  resetQuestionButton.disabled = true;
-  resetAllButton.disabled = true;
-
-
-  try {
-
-    const batch = writeBatch(db);
-
-    // 全問題で共通のリセット番号
-    const resetToken = Date.now();
-
-
-    for (const question of QUESTIONS) {
-
-      const answersSnapshot =
-        await getDocs(
-          collection(
-            db,
-            "answers",
-            question.id,
-            "teams"
-          )
-        );
-
-
-      answersSnapshot.forEach(
-        (answerDoc) => {
-
-          batch.delete(
-            answerDoc.ref
-          );
-
-        }
-      );
-
-
-      // 全問題を締切状態へ
-      batch.set(
-        doc(
-          db,
-          "controls",
-          question.id
-        ),
-        {
-          isOpen: false,
-          resetToken: resetToken
-        },
-        {
-          merge: true
-        }
-      );
-
+    if (unsubscribeControl) {
+      unsubscribeControl();
+      unsubscribeControl = null;
     }
 
-
-    await batch.commit();
-
-
-    alert(
-      "全問題をリセットしました。"
-    );
-
-  } catch (error) {
-
-    console.error(error);
-
-    alert(
-      "全問題のリセットに失敗しました。"
-    );
-
-  } finally {
-
-    resetQuestionButton.disabled = false;
-    resetAllButton.disabled = false;
-
+    if (unsubscribeAnswers) {
+      unsubscribeAnswers();
+      unsubscribeAnswers = null;
+    }
   }
-}
+});

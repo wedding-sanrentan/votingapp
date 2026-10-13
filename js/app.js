@@ -18,12 +18,9 @@ const teamScreen = document.getElementById("team-screen");
 const questionScreen = document.getElementById("question-screen");
 const teamSelect = document.getElementById("team-select");
 const startButton = document.getElementById("start-button");
-const questionContent =
-  document.getElementById("question-content");
 
-const closedMessage =
-  document.getElementById("closed-message");
-
+const questionContent = document.getElementById("question-content");
+const closedMessage = document.getElementById("closed-message");
 const questionNumber = document.getElementById("question-number");
 const questionTitle = document.getElementById("question-title");
 const teamBadge = document.getElementById("team-badge");
@@ -106,70 +103,6 @@ function renderChoices(question) {
   });
 }
 
-function updateStatusUi() {
-
-  const question =
-    QUESTIONS[currentQuestionIndex];
-
-  if (isQuestionOpen) {
-
-    // 問題を表示
-    closedMessage.hidden = true;
-    questionContent.hidden = false;
-
-    questionTitle.textContent =
-      question.title;
-
-    renderChoices(question);
-
-    const saved =
-      getSavedAnswer(question.id);
-
-    fillRankSelect(
-      rank1,
-      question.choices,
-      saved?.[0] || ""
-    );
-
-    fillRankSelect(
-      rank2,
-      question.choices,
-      saved?.[1] || ""
-    );
-
-    fillRankSelect(
-      rank3,
-      question.choices,
-      saved?.[2] || ""
-    );
-
-    statusBox.textContent =
-      "🟢 回答受付中";
-
-    statusBox.className =
-      "status status-open";
-
-  } else {
-
-    // 締切中は問題情報を消す
-    questionContent.hidden = true;
-    closedMessage.hidden = false;
-
-    questionTitle.textContent = "";
-    choiceList.innerHTML = "";
-
-    rank1.innerHTML = "";
-    rank2.innerHTML = "";
-    rank3.innerHTML = "";
-
-  }
-
-  validateAnswer();
-}
-
-  validateAnswer();
-}
-
 function validateAnswer() {
   const values = [rank1.value, rank2.value, rank3.value];
   const allSelected = values.every(Boolean);
@@ -178,158 +111,128 @@ function validateAnswer() {
   submitButton.disabled = !(isQuestionOpen && allSelected && unique);
 
   if (allSelected && !unique) {
-    showMessage("1位・2位・3位には別々の選択肢を選んでください。", "error");
+    showMessage(
+      "1位・2位・3位には別々の選択肢を選んでください。",
+      "error"
+    );
   } else if (messageBox.textContent.includes("別々の選択肢")) {
     showMessage("");
   }
 }
 
-function watchControl(questionId) {
+function updateStatusUi() {
+  const question = QUESTIONS[currentQuestionIndex];
 
-  if (unsubscribeControl) {
+  if (isQuestionOpen) {
+    closedMessage.hidden = true;
+    questionContent.hidden = false;
 
-    unsubscribeControl();
-    unsubscribeControl = null;
+    questionTitle.textContent = question.title;
+    renderChoices(question);
 
+    const saved = getSavedAnswer(question.id);
+
+    fillRankSelect(rank1, question.choices, saved?.[0] || "");
+    fillRankSelect(rank2, question.choices, saved?.[1] || "");
+    fillRankSelect(rank3, question.choices, saved?.[2] || "");
+
+    statusBox.textContent = "🟢 回答受付中";
+    statusBox.className = "status status-open";
+  } else {
+    // 締切中は問題文・選択肢・回答欄をすべて隠す
+    questionContent.hidden = true;
+    closedMessage.hidden = false;
+
+    questionTitle.textContent = "";
+    choiceList.innerHTML = "";
+    rank1.innerHTML = "";
+    rank2.innerHTML = "";
+    rank3.innerHTML = "";
   }
 
+  validateAnswer();
+}
+
+function applyResetToken(questionId, resetToken) {
+  if (!resetToken) {
+    return;
+  }
+
+  const resetKey = `resetToken:${questionId}`;
+  const savedResetToken = localStorage.getItem(resetKey);
+
+  if (savedResetToken === String(resetToken)) {
+    return;
+  }
+
+  // 管理画面からリセットされた問題の端末内回答を削除
+  localStorage.removeItem(`answer:${questionId}`);
+  localStorage.setItem(resetKey, String(resetToken));
+
+  rank1.value = "";
+  rank2.value = "";
+  rank3.value = "";
+  showMessage("");
+}
+
+function watchControl(questionId) {
+  if (unsubscribeControl) {
+    unsubscribeControl();
+    unsubscribeControl = null;
+  }
 
   isQuestionOpen = false;
   updateStatusUi();
 
+  const controlRef = doc(db, "controls", questionId);
 
-  const controlRef =
-    doc(
-      db,
-      "controls",
-      questionId
-    );
-
-
-unsubscribeControl =
-  onSnapshot(
+  unsubscribeControl = onSnapshot(
     controlRef,
-
     (snapshot) => {
+      const data = snapshot.data();
 
-      const data =
-        snapshot.data();
+      applyResetToken(questionId, data?.resetToken);
 
       isQuestionOpen =
         snapshot.exists() &&
         data?.isOpen === true;
 
-
-      // 管理画面からリセットされたか確認
-      const resetToken =
-        data?.resetToken;
-
-
-      if (resetToken) {
-
-        const resetKey =
-          `resetToken:${questionId}`;
-
-        const savedResetToken =
-          localStorage.getItem(
-            resetKey
-          );
-
-
-        if (
-          savedResetToken !==
-          String(resetToken)
-        ) {
-
-          // この問題の端末内回答を削除
-          localStorage.removeItem(
-            `answer:${questionId}`
-          );
-
-
-          // 最新のリセット番号を保存
-          localStorage.setItem(
-            resetKey,
-            String(resetToken)
-          );
-
-
-          // 回答欄もクリア
-          rank1.value = "";
-          rank2.value = "";
-          rank3.value = "";
-
-          showMessage("");
-
-        }
-
-      }
-
-
       updateStatusUi();
-
     },
-
     (error) => {
-
       console.error(error);
-
       isQuestionOpen = false;
-
       updateStatusUi();
-
     }
   );
+}
 
 function showQuestion() {
+  const question = QUESTIONS[currentQuestionIndex];
 
-  const question =
-    QUESTIONS[currentQuestionIndex];
-
-  // 別の問題へ移動した瞬間は
-  // まず問題内容をすべて隠す
+  // Firestoreの受付状態が返るまでは問題内容を表示しない
   isQuestionOpen = false;
-
   questionContent.hidden = true;
   closedMessage.hidden = false;
 
   questionTitle.textContent = "";
   choiceList.innerHTML = "";
-
   rank1.innerHTML = "";
   rank2.innerHTML = "";
   rank3.innerHTML = "";
-
   showMessage("");
 
-
-  // 問題番号
   if (question.id === "q10") {
-
-    questionNumber.textContent =
-      "FINAL QUESTION";
-
+    questionNumber.textContent = "FINAL QUESTION";
   } else {
-
-    questionNumber.textContent =
-      `QUESTION ${question.number} / 10`;
-
+    questionNumber.textContent = `QUESTION ${question.number} / 10`;
   }
 
+  teamBadge.textContent = `チーム：${selectedTeam.name}`;
 
-  teamBadge.textContent =
-    `チーム：${selectedTeam.name}`;
+  previousButton.disabled = currentQuestionIndex === 0;
+  nextButton.disabled = currentQuestionIndex === QUESTIONS.length - 1;
 
-
-  previousButton.disabled =
-    currentQuestionIndex === 0;
-
-  nextButton.disabled =
-    currentQuestionIndex ===
-    QUESTIONS.length - 1;
-
-
-  // Firestoreの受付状態を確認
   watchControl(question.id);
 }
 
@@ -351,7 +254,13 @@ async function submitAnswer() {
   showMessage("送信中です…");
 
   try {
-    const answerRef = doc(db, "answers", question.id, "teams", selectedTeam.id);
+    const answerRef = doc(
+      db,
+      "answers",
+      question.id,
+      "teams",
+      selectedTeam.id
+    );
 
     await setDoc(answerRef, {
       teamId: selectedTeam.id,
@@ -362,14 +271,24 @@ async function submitAnswer() {
     });
 
     saveLocalAnswer(question.id, ranking);
-    showMessage("回答を登録しました。最後に送信された回答が採用されます。", "success");
+
+    showMessage(
+      "回答を登録しました。最後に送信された回答が採用されます。",
+      "success"
+    );
   } catch (error) {
     console.error(error);
 
     if (error?.code === "permission-denied") {
-      showMessage("送信直前に締め切られたため、回答は登録されませんでした。", "error");
+      showMessage(
+        "送信直前に締め切られたため、回答は登録されませんでした。",
+        "error"
+      );
     } else {
-      showMessage("回答を送信できませんでした。通信状況をご確認ください。", "error");
+      showMessage(
+        "回答を送信できませんでした。通信状況をご確認ください。",
+        "error"
+      );
     }
   } finally {
     validateAnswer();
@@ -384,8 +303,10 @@ function enterGame(teamId) {
   }
 
   localStorage.setItem("weddingTeam", selectedTeam.id);
+
   teamScreen.hidden = true;
   questionScreen.hidden = false;
+
   showQuestion();
 }
 
@@ -421,7 +342,9 @@ nextButton.addEventListener("click", () => {
 });
 
 onAuthStateChanged(auth, (user) => {
-  if (!user) return;
+  if (!user) {
+    return;
+  }
 
   loadingScreen.hidden = true;
 
@@ -440,6 +363,7 @@ try {
   await signInAnonymously(auth);
 } catch (error) {
   console.error(error);
+
   loadingScreen.innerHTML = `
     <h2>接続できませんでした</h2>
     <p>Firebase Authentication の「匿名」が有効になっているか確認してください。</p>

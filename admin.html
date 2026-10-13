@@ -14,18 +14,39 @@
         <p class="eyebrow">ADMIN DASHBOARD</p>
         <h1>新郎新婦サンレンタン</h1>
       </div>
-      <button id="logout-button" class="button button-ghost button-small" hidden>ログアウト</button>
+
+      <button
+        id="logout-button"
+        class="button button-ghost button-small"
+        hidden
+      >
+        ログアウト
+      </button>
     </header>
 
     <section id="admin-login" class="card admin-login-card">
       <h2>幹事ログイン</h2>
+
       <label class="field-label" for="admin-email">メールアドレス</label>
-      <input id="admin-email" class="input" type="email" autocomplete="username">
+      <input
+        id="admin-email"
+        class="input"
+        type="email"
+        autocomplete="username"
+      >
 
       <label class="field-label" for="admin-password">パスワード</label>
-      <input id="admin-password" class="input" type="password" autocomplete="current-password">
+      <input
+        id="admin-password"
+        class="input"
+        type="password"
+        autocomplete="current-password"
+      >
 
-      <button id="login-button" class="button button-primary">ログイン</button>
+      <button id="login-button" class="button button-primary">
+        ログイン
+      </button>
+
       <div id="login-message" class="message" aria-live="polite"></div>
     </section>
 
@@ -34,39 +55,56 @@
         <section class="card">
           <h2>問題コントロール</h2>
 
-          <label class="field-label" for="admin-question-select">表示する問題</label>
+          <label class="field-label" for="admin-question-select">
+            表示する問題
+          </label>
+
           <select id="admin-question-select" class="select"></select>
 
-          <div id="admin-control-status" class="status status-closed">状態確認中…</div>
+          <div
+            id="admin-control-status"
+            class="status status-closed"
+          >
+            状態確認中…
+          </div>
 
           <div class="admin-actions">
-            <button id="open-button" class="button button-open">回答受付を開始</button>
-            <button id="close-button" class="button button-danger">回答を締め切る</button>
+            <button id="open-button" class="button button-open">
+              回答受付を開始
+            </button>
+
+            <button id="close-button" class="button button-danger">
+              回答を締め切る
+            </button>
           </div>
 
           <div class="reset-actions">
-  <button
-    id="reset-question-button"
-    class="button button-secondary"
-  >
-    選択中の問題をリセット
-  </button>
+            <button
+              id="reset-question-button"
+              class="button button-secondary"
+            >
+              選択中の問題をリセット
+            </button>
 
-  <button
-    id="reset-all-button"
-    class="button button-ghost"
-  >
-    全問題をリセット
-  </button>
-</div>
+            <button
+              id="reset-all-button"
+              class="button button-ghost"
+            >
+              全問題をリセット
+            </button>
+          </div>
         </section>
 
         <section class="card">
           <h2>回答状況</h2>
+
           <div class="big-stat">
             <span id="answered-count">0</span>
-            <span class="big-stat-denom">/ <span id="team-count">0</span> チーム</span>
+            <span class="big-stat-denom">
+              / <span id="team-count">0</span> チーム
+            </span>
           </div>
+
           <p id="answer-key-status" class="subtle"></p>
         </section>
       </div>
@@ -90,6 +128,7 @@
                 <th>最終更新</th>
               </tr>
             </thead>
+
             <tbody id="answers-table-body"></tbody>
           </table>
         </div>
@@ -98,8 +137,15 @@
       <section class="card">
         <div class="section-title-row">
           <h2>総合ランキング</h2>
-          <button id="refresh-ranking-button" class="button button-secondary button-small">再集計</button>
+
+          <button
+            id="refresh-ranking-button"
+            class="button button-secondary button-small"
+          >
+            再集計
+          </button>
         </div>
+
         <div id="leaderboard" class="leaderboard"></div>
       </section>
     </section>
