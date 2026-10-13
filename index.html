@@ -32,48 +32,60 @@
       <button id="start-button" class="button button-primary">ゲームに参加する</button>
     </section>
 
+
+    <!-- 得点表：回答エリアとは別セクションで表示 -->
+    <section id="score-guide-section" class="score-guide-section" hidden>
+      <div class="score-guide-heading">
+        <span class="score-guide-icon" aria-hidden="true">🏆</span>
+        <div>
+          <p class="score-guide-kicker">SANRENTAN SCORE</p>
+          <h2>得点ルール</h2>
+        </div>
+      </div>
+
+      <div class="score-table-wrap">
+        <table class="score-guide-table" aria-label="サンレンタン得点ルール">
+          <thead>
+            <tr>
+              <th scope="col">得点</th>
+              <th scope="col">条件</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="score-six">
+              <th scope="row">6点</th>
+              <td>1〜3位すべて順位まで一致</td>
+            </tr>
+            <tr>
+              <th scope="row">4点</th>
+              <td>3つすべて的中・順位違い</td>
+            </tr>
+            <tr>
+              <th scope="row">3点</th>
+              <td>1位・2位が順位まで一致</td>
+            </tr>
+            <tr>
+              <th scope="row">2点</th>
+              <td>3つのうち2つが的中</td>
+            </tr>
+            <tr>
+              <th scope="row">1点</th>
+              <td>1位が的中</td>
+            </tr>
+            <tr>
+              <th scope="row">0点</th>
+              <td>上記以外</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
 <section
   id="question-screen"
   class="card"
   hidden
 >
-
-  <!-- サンレンタン得点表：回答受付中・締切中どちらでも表示 -->
-  <div class="score-guide" aria-label="得点ルール">
-    <div class="score-guide-title">🏆 得点ルール</div>
-
-    <div class="score-guide-list">
-      <div class="score-guide-row score-max">
-        <span class="score-point">6点</span>
-        <span class="score-description">1〜3位すべて順位まで一致</span>
-      </div>
-
-      <div class="score-guide-row">
-        <span class="score-point">4点</span>
-        <span class="score-description">3つすべて的中・順位違い</span>
-      </div>
-
-      <div class="score-guide-row">
-        <span class="score-point">3点</span>
-        <span class="score-description">1位・2位が順位まで一致</span>
-      </div>
-
-      <div class="score-guide-row">
-        <span class="score-point">2点</span>
-        <span class="score-description">3つのうち2つが的中</span>
-      </div>
-
-      <div class="score-guide-row">
-        <span class="score-point">1点</span>
-        <span class="score-description">1位が的中</span>
-      </div>
-
-      <div class="score-guide-row score-zero">
-        <span class="score-point">0点</span>
-        <span class="score-description">上記以外</span>
-      </div>
-    </div>
-  </div>
 
   <div class="question-top">
     <div>
@@ -86,10 +98,11 @@
   <!-- 締切中はこれだけ表示 -->
   <div
     id="closed-message"
-    class="status status-closed"
+    class="status status-closed closed-message"
   >
-    🔒 この問題は現在、回答を受け付けていません。<br>
-    司会の案内をお待ちください。
+    <span class="closed-message-line">🔒 この問題は現在、</span>
+    <span class="closed-message-line closed-message-main">回答を受け付けていません。</span>
+    <span class="closed-message-line">司会の案内をお待ちください。</span>
   </div>
 
   <!-- 回答受付中だけ表示 -->

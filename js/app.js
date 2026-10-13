@@ -16,6 +16,7 @@ import {
 const loadingScreen = document.getElementById("loading-screen");
 const teamScreen = document.getElementById("team-screen");
 const questionScreen = document.getElementById("question-screen");
+const scoreGuideSection = document.getElementById("score-guide-section");
 const teamSelect = document.getElementById("team-select");
 const startButton = document.getElementById("start-button");
 
@@ -305,6 +306,7 @@ function enterGame(teamId) {
   localStorage.setItem("weddingTeam", selectedTeam.id);
 
   teamScreen.hidden = true;
+  scoreGuideSection.hidden = false;
   questionScreen.hidden = false;
 
   showQuestion();
