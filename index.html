@@ -38,6 +38,43 @@
   hidden
 >
 
+  <!-- サンレンタン得点表：回答受付中・締切中どちらでも表示 -->
+  <div class="score-guide" aria-label="得点ルール">
+    <div class="score-guide-title">🏆 得点ルール</div>
+
+    <div class="score-guide-list">
+      <div class="score-guide-row score-max">
+        <span class="score-point">6点</span>
+        <span class="score-description">1〜3位すべて順位まで一致</span>
+      </div>
+
+      <div class="score-guide-row">
+        <span class="score-point">4点</span>
+        <span class="score-description">3つすべて的中・順位違い</span>
+      </div>
+
+      <div class="score-guide-row">
+        <span class="score-point">3点</span>
+        <span class="score-description">1位・2位が順位まで一致</span>
+      </div>
+
+      <div class="score-guide-row">
+        <span class="score-point">2点</span>
+        <span class="score-description">3つのうち2つが的中</span>
+      </div>
+
+      <div class="score-guide-row">
+        <span class="score-point">1点</span>
+        <span class="score-description">1位が的中</span>
+      </div>
+
+      <div class="score-guide-row score-zero">
+        <span class="score-point">0点</span>
+        <span class="score-description">上記以外</span>
+      </div>
+    </div>
+  </div>
+
   <div class="question-top">
     <div>
       <p id="question-number" class="question-number"></p>
