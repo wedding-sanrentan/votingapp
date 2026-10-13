@@ -18,7 +18,11 @@ const teamScreen = document.getElementById("team-screen");
 const questionScreen = document.getElementById("question-screen");
 const teamSelect = document.getElementById("team-select");
 const startButton = document.getElementById("start-button");
-const changeTeamButton = document.getElementById("change-team-button");
+const questionContent =
+  document.getElementById("question-content");
+
+const closedMessage =
+  document.getElementById("closed-message");
 
 const questionNumber = document.getElementById("question-number");
 const questionTitle = document.getElementById("question-title");
