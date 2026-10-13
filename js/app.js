@@ -211,27 +211,54 @@ function watchControl(questionId) {
 }
 
 function showQuestion() {
-  const question = QUESTIONS[currentQuestionIndex];
-  const saved = getSavedAnswer(question.id);
 
-if (question.id === "q10") {
-  questionNumber.textContent = "FINAL QUESTION";
-} else {
-  questionNumber.textContent = `QUESTION ${question.number}`;
-}
-  questionTitle.textContent = question.title;
-  teamBadge.textContent = `チーム：${selectedTeam.name}`;
+  const question =
+    QUESTIONS[currentQuestionIndex];
 
-  renderChoices(question);
+  // 別の問題へ移動した瞬間は
+  // まず問題内容をすべて隠す
+  isQuestionOpen = false;
 
-  fillRankSelect(rank1, question.choices, saved?.[0] || "");
-  fillRankSelect(rank2, question.choices, saved?.[1] || "");
-  fillRankSelect(rank3, question.choices, saved?.[2] || "");
+  questionContent.hidden = true;
+  closedMessage.hidden = false;
 
-  previousButton.disabled = currentQuestionIndex === 0;
-  nextButton.disabled = currentQuestionIndex === QUESTIONS.length - 1;
+  questionTitle.textContent = "";
+  choiceList.innerHTML = "";
 
-  showMessage(saved ? "この端末には前回送信した回答が残っています。" : "");
+  rank1.innerHTML = "";
+  rank2.innerHTML = "";
+  rank3.innerHTML = "";
+
+  showMessage("");
+
+
+  // 問題番号
+  if (question.id === "q10") {
+
+    questionNumber.textContent =
+      "FINAL QUESTION";
+
+  } else {
+
+    questionNumber.textContent =
+      `QUESTION ${question.number} / 10`;
+
+  }
+
+
+  teamBadge.textContent =
+    `チーム：${selectedTeam.name}`;
+
+
+  previousButton.disabled =
+    currentQuestionIndex === 0;
+
+  nextButton.disabled =
+    currentQuestionIndex ===
+    QUESTIONS.length - 1;
+
+
+  // Firestoreの受付状態を確認
   watchControl(question.id);
 }
 
