@@ -414,3 +414,105 @@ async function resetCurrentQuestion() {
 
   }
 }
+
+async function resetAllQuestions() {
+
+  const ok = confirm(
+    "第7問〜第10問の回答をすべて削除します。\n" +
+    "全チームの得点も0に戻ります。\n\n" +
+    "この操作は元に戻せません。\n" +
+    "本当にリセットしますか？"
+  );
+
+  if (!ok) {
+    return;
+  }
+
+
+  const secondCheck = confirm(
+    "最終確認です。\n\n" +
+    "全問題をリセットしてよろしいですか？"
+  );
+
+  if (!secondCheck) {
+    return;
+  }
+
+
+  resetQuestionButton.disabled = true;
+  resetAllButton.disabled = true;
+
+
+  try {
+
+    const batch = writeBatch(db);
+
+    // 全問題で共通のリセット番号
+    const resetToken = Date.now();
+
+
+    for (const question of QUESTIONS) {
+
+      const answersSnapshot =
+        await getDocs(
+          collection(
+            db,
+            "answers",
+            question.id,
+            "teams"
+          )
+        );
+
+
+      answersSnapshot.forEach(
+        (answerDoc) => {
+
+          batch.delete(
+            answerDoc.ref
+          );
+
+        }
+      );
+
+
+      // 全問題を締切状態へ
+      batch.set(
+        doc(
+          db,
+          "controls",
+          question.id
+        ),
+        {
+          isOpen: false,
+          resetToken: resetToken
+        },
+        {
+          merge: true
+        }
+      );
+
+    }
+
+
+    await batch.commit();
+
+
+    alert(
+      "全問題をリセットしました。"
+    );
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert(
+      "全問題のリセットに失敗しました。"
+    );
+
+  } finally {
+
+    resetQuestionButton.disabled = false;
+    resetAllButton.disabled = false;
+
+  }
+}
