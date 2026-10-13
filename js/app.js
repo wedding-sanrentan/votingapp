@@ -206,33 +206,80 @@ function watchControl(questionId) {
     );
 
 
-  unsubscribeControl =
-    onSnapshot(
+unsubscribeControl =
+  onSnapshot(
+    controlRef,
 
-      controlRef,
+    (snapshot) => {
 
-      snapshot => {
+      const data =
+        snapshot.data();
 
-        isQuestionOpen =
-          snapshot.exists() &&
-          snapshot.data()?.isOpen === true;
+      isQuestionOpen =
+        snapshot.exists() &&
+        data?.isOpen === true;
 
-        updateStatusUi();
 
-      },
+      // 管理画面からリセットされたか確認
+      const resetToken =
+        data?.resetToken;
 
-      error => {
 
-        console.error(error);
+      if (resetToken) {
 
-        isQuestionOpen = false;
+        const resetKey =
+          `resetToken:${questionId}`;
 
-        updateStatusUi();
+        const savedResetToken =
+          localStorage.getItem(
+            resetKey
+          );
+
+
+        if (
+          savedResetToken !==
+          String(resetToken)
+        ) {
+
+          // この問題の端末内回答を削除
+          localStorage.removeItem(
+            `answer:${questionId}`
+          );
+
+
+          // 最新のリセット番号を保存
+          localStorage.setItem(
+            resetKey,
+            String(resetToken)
+          );
+
+
+          // 回答欄もクリア
+          rank1.value = "";
+          rank2.value = "";
+          rank3.value = "";
+
+          showMessage("");
+
+        }
 
       }
 
-    );
-}
+
+      updateStatusUi();
+
+    },
+
+    (error) => {
+
+      console.error(error);
+
+      isQuestionOpen = false;
+
+      updateStatusUi();
+
+    }
+  );
 
 function showQuestion() {
 
