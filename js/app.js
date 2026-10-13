@@ -353,22 +353,6 @@ startButton.addEventListener("click", () => {
   enterGame(teamSelect.value);
 });
 
-changeTeamButton.addEventListener("click", () => {
-  const ok = confirm("チーム選択画面へ戻りますか？");
-  if (!ok) return;
-
-  localStorage.removeItem("weddingTeam");
-  selectedTeam = null;
-
-  if (unsubscribeControl) {
-    unsubscribeControl();
-    unsubscribeControl = null;
-  }
-
-  questionScreen.hidden = true;
-  teamScreen.hidden = false;
-});
-
 [rank1, rank2, rank3].forEach((select) => {
   select.addEventListener("change", validateAnswer);
 });
