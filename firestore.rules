@@ -7,10 +7,14 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    // 管理者は Firestore の admins/{UID} ドキュメントの存在で判定します。
+    // 管理者を変更するときはコードやルールのUIDを書き換えるのではなく、
+    // Firebase Console で admins コレクションのドキュメントを変更してください。
     function isAdmin() {
-      // ↓ Firebase Authentication で作成した幹事ユーザーの UID へ必ず変更してください
       return signedIn()
-        && request.auth.uid == "H5DqJecJtnYMEXphKGkBoMMP4W02";
+        && exists(
+          /databases/$(database)/documents/admins/$(request.auth.uid)
+        );
     }
 
     function validAnswer(questionId, teamId) {
@@ -32,6 +36,14 @@ service cloud.firestore {
         && request.resource.data.ranking[0] != request.resource.data.ranking[1]
         && request.resource.data.ranking[0] != request.resource.data.ranking[2]
         && request.resource.data.ranking[1] != request.resource.data.ranking[2];
+    }
+
+    // 管理者登録。
+    // Webアプリから追加・削除はできません。
+    // Firebase Console から admins/{管理者UID} を作成してください。
+    match /admins/{userId} {
+      allow read: if signedIn() && request.auth.uid == userId;
+      allow write: if false;
     }
 
     // 問題ごとの「受付中 / 締切」

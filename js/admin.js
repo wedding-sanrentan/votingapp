@@ -417,6 +417,32 @@ async function resetAllQuestions() {
   }
 }
 
+
+async function hasAdminPermission(user) {
+  try {
+    const adminSnapshot = await getDoc(
+      doc(db, "admins", user.uid)
+    );
+
+    return adminSnapshot.exists();
+  } catch (error) {
+    console.error("管理者権限の確認に失敗しました。", error);
+    return false;
+  }
+}
+
+function showUnauthorizedMessage(user) {
+  loginSection.hidden = false;
+  dashboard.hidden = true;
+  logoutButton.hidden = false;
+
+  loginMessage.textContent =
+    `このアカウントには管理権限がありません。` +
+    ` Firebase Console の Firestore に admins/${user.uid} を作成してください。`;
+
+  loginMessage.className = "message error";
+}
+
 QUESTIONS.forEach((question) => {
   const option = document.createElement("option");
   option.value = question.id;
@@ -460,11 +486,29 @@ resetQuestionButton.addEventListener("click", resetCurrentQuestion);
 resetAllButton.addEventListener("click", resetAllQuestions);
 refreshRankingButton.addEventListener("click", refreshLeaderboard);
 
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
   if (user && !user.isAnonymous) {
+    const authorized = await hasAdminPermission(user);
+
+    if (!authorized) {
+      if (unsubscribeControl) {
+        unsubscribeControl();
+        unsubscribeControl = null;
+      }
+
+      if (unsubscribeAnswers) {
+        unsubscribeAnswers();
+        unsubscribeAnswers = null;
+      }
+
+      showUnauthorizedMessage(user);
+      return;
+    }
+
     loginSection.hidden = true;
     dashboard.hidden = false;
     logoutButton.hidden = false;
+    loginMessage.textContent = "";
 
     watchQuestion();
     refreshLeaderboard();

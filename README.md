@@ -76,3 +76,37 @@ Firebase Console の Firestore → ルールへ貼り付けて公開してくだ
 - 得点ルールを回答カードの外側・上部に独立した表形式で表示
 - 6点条件を黄色で強調
 - 締切メッセージはスマホで「回答を受け付けていません。」が途中改行されにくい表示に調整
+
+
+## 管理ユーザーの設定（重要）
+
+この完全版では、管理者UIDを `firestore.rules` に直接書きません。
+Firestore の `admins/{UID}` ドキュメントが存在するユーザーだけを管理者として扱います。
+
+### 初回設定 / 管理者変更
+
+1. Firebase Console → Authentication → Users を開く
+2. 管理者にしたいユーザーの UID をコピーする
+3. Firestore Database → データ を開く
+4. `admins` コレクションを作成する
+5. ドキュメントIDを「管理者のUID」にする
+6. フィールドを1つ追加する
+   - フィールド: `enabled`
+   - 型: boolean
+   - 値: `true`
+7. Firestore Database → ルール を開く
+8. このZIPの `firestore.rules` の内容を貼り付けて「公開」する
+
+例:
+
+admins
+└─ abcDEF123456...
+   └─ enabled: true
+
+管理者を変更するときは、古いUIDのドキュメントを削除し、新しいUIDのドキュメントを作成します。
+GitHubのコード変更は不要です。
+
+### 注意
+
+GitHub Pages に `firestore.rules` をアップロードするだけでは、Firebase のルールは変更されません。
+必ず Firebase Console の Firestore → ルール画面で貼り付けて「公開」してください。
