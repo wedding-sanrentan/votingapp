@@ -36,6 +36,11 @@ const answerKeyStatus = document.getElementById("answer-key-status");
 const answersTableBody = document.getElementById("answers-table-body");
 const refreshRankingButton = document.getElementById("refresh-ranking-button");
 const leaderboard = document.getElementById("leaderboard");
+const resetQuestionButton =
+  document.getElementById("reset-question-button");
+
+const resetAllButton =
+  document.getElementById("reset-all-button");
 
 let unsubscribeControl = null;
 let unsubscribeAnswers = null;
