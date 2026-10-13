@@ -315,3 +315,88 @@ onAuthStateChanged(auth, (user) => {
     if (unsubscribeAnswers) unsubscribeAnswers();
   }
 });
+
+async function resetCurrentQuestion() {
+
+  const question = currentQuestion();
+
+  const ok = confirm(
+    `第${question.number}問の回答をすべて削除します。\n` +
+    `この操作は元に戻せません。\n\n` +
+    `リセットしますか？`
+  );
+
+  if (!ok) {
+    return;
+  }
+
+
+  resetQuestionButton.disabled = true;
+  resetAllButton.disabled = true;
+
+
+  try {
+
+    const batch = writeBatch(db);
+
+    // この問題の全チーム回答を取得
+    const answersSnapshot =
+      await getDocs(
+        collection(
+          db,
+          "answers",
+          question.id,
+          "teams"
+        )
+      );
+
+
+    // 回答を全部削除
+    answersSnapshot.forEach((answerDoc) => {
+      batch.delete(answerDoc.ref);
+    });
+
+
+    // 問題を締切状態へ戻す
+    // resetToken は参加者端末の回答表示クリア用
+    const controlRef =
+      doc(
+        db,
+        "controls",
+        question.id
+      );
+
+    batch.set(
+      controlRef,
+      {
+        isOpen: false,
+        resetToken: Date.now()
+      },
+      {
+        merge: true
+      }
+    );
+
+
+    await batch.commit();
+
+
+    alert(
+      `第${question.number}問をリセットしました。`
+    );
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert(
+      "リセットに失敗しました。"
+    );
+
+  } finally {
+
+    resetQuestionButton.disabled = false;
+    resetAllButton.disabled = false;
+
+  }
+}
