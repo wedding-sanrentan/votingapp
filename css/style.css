@@ -608,12 +608,12 @@ button:disabled {
 
   .score-guide-table th,
   .score-guide-table td {
-    padding: 8px 9px;
+    padding: 8px 7px;
   }
 
   .score-guide-table thead th:first-child,
   .score-guide-table tbody th {
-    width: 58px;
+    width: 54px;
   }
 
   .score-guide-table tbody th {
@@ -621,7 +621,8 @@ button:disabled {
   }
 
   .score-guide-table tbody td {
-    font-size: 12px;
+    font-size: 11.5px;
+    letter-spacing: -0.1px;
   }
 
   .closed-message {
@@ -642,6 +643,7 @@ button:disabled {
   }
 
   .score-guide-table tbody td {
-    font-size: 11.5px;
+    font-size: 10.5px;
+    letter-spacing: -0.15px;
   }
 }
