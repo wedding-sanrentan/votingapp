@@ -303,6 +303,15 @@ questionSelect.addEventListener("change", watchQuestion);
 openButton.addEventListener("click", () => setOpenState(true));
 closeButton.addEventListener("click", () => setOpenState(false));
 refreshRankingButton.addEventListener("click", refreshLeaderboard);
+resetQuestionButton.addEventListener(
+  "click",
+  resetCurrentQuestion
+);
+
+resetAllButton.addEventListener(
+  "click",
+  resetAllQuestions
+);
 
 onAuthStateChanged(auth, (user) => {
   if (user && !user.isAnonymous) {
