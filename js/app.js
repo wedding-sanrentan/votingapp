@@ -107,13 +107,65 @@ function renderChoices(question) {
 }
 
 function updateStatusUi() {
+
+  const question =
+    QUESTIONS[currentQuestionIndex];
+
   if (isQuestionOpen) {
-    statusBox.textContent = "🟢 回答受付中";
-    statusBox.className = "status status-open";
+
+    // 問題を表示
+    closedMessage.hidden = true;
+    questionContent.hidden = false;
+
+    questionTitle.textContent =
+      question.title;
+
+    renderChoices(question);
+
+    const saved =
+      getSavedAnswer(question.id);
+
+    fillRankSelect(
+      rank1,
+      question.choices,
+      saved?.[0] || ""
+    );
+
+    fillRankSelect(
+      rank2,
+      question.choices,
+      saved?.[1] || ""
+    );
+
+    fillRankSelect(
+      rank3,
+      question.choices,
+      saved?.[2] || ""
+    );
+
+    statusBox.textContent =
+      "🟢 回答受付中";
+
+    statusBox.className =
+      "status status-open";
+
   } else {
-    statusBox.textContent = "🔒 回答は締め切られています";
-    statusBox.className = "status status-closed";
+
+    // 締切中は問題情報を消す
+    questionContent.hidden = true;
+    closedMessage.hidden = false;
+
+    questionTitle.textContent = "";
+    choiceList.innerHTML = "";
+
+    rank1.innerHTML = "";
+    rank2.innerHTML = "";
+    rank3.innerHTML = "";
+
   }
+
+  validateAnswer();
+}
 
   validateAnswer();
 }
