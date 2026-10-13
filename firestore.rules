@@ -10,7 +10,7 @@ service cloud.firestore {
     function isAdmin() {
       // ↓ Firebase Authentication で作成した幹事ユーザーの UID へ必ず変更してください
       return signedIn()
-        && request.auth.uid == "rkbkPT7HBBNvGNBVKcsO1P7eJ4S2";
+        && request.auth.uid == "H5DqJecJtnYMEXphKGkBoMMP4W02";
     }
 
     function validAnswer(questionId, teamId) {
