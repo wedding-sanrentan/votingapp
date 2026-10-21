@@ -40,19 +40,19 @@ export const QUESTIONS = [
       { id: "F", text: "スーパーとジムまで徒歩1分のところ" }
     ]
   },
-  {
-    id: "q9",
-    number: 9,
-    title: "第9問（作成中）",
-    choices: [
-      { id: "A", text: "選択肢A" },
-      { id: "B", text: "選択肢B" },
-      { id: "C", text: "選択肢C" },
-      { id: "D", text: "選択肢D" },
-      { id: "E", text: "選択肢E" },
-      { id: "F", text: "選択肢F" }
-    ]
-  },
+{
+  id: "q9",
+  number: 9,
+  title: "デートでやりたいことは？",
+  choices: [
+    { id: "A", text: "夜景を見る" },
+    { id: "B", text: "謎解き脱出ゲーム" },
+    { id: "C", text: "山手線一周散歩" },
+    { id: "D", text: "競馬" },
+    { id: "E", text: "食べ歩き" },
+    { id: "F", text: "ドライブ" }
+  ]
+},
   {
     id: "q10",
     number: 10,
